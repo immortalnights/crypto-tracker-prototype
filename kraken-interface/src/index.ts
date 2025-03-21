@@ -1,0 +1,62 @@
+import { SubscriptionManager } from "./SubscriptionManager.ts"
+import { WebSocketRouter } from "./WebSocketRouter.ts"
+
+const KRAKEN_API_URL = "wss://ws.kraken.com/v2"
+const fiatcurrency = "GBP"
+const crypocurrencies = ["BTC", "ETH", "SOL", "XRP", "LTC", "USDT"]
+
+const router = new WebSocketRouter()
+const subscriptions = new SubscriptionManager(router)
+const socket = new WebSocket(KRAKEN_API_URL)
+
+// Executes when the connection is successfully established.
+socket.addEventListener("open", (event) => {
+    console.log("WebSocket connection established!")
+    // socket.send("Hello Server!")
+})
+
+// Listen for messages and executes when a message is received from the server.
+socket.addEventListener("message", (event) => {
+    // console.debug("Message from server:", event.data)
+    router.handleMessage(socket, event.data)
+})
+
+// Executes when the connection is closed, providing the close code and reason.
+socket.addEventListener("close", (event) => {
+    console.log("WebSocket connection closed:", event.code, event.reason)
+})
+
+// Executes if an error occurs during the WebSocket communication.
+socket.addEventListener("error", (error) => {
+    console.error("WebSocket error:", error)
+})
+
+router.on("status", (ws, { data: dataArray }) => {
+    const [data] = dataArray
+    if (data.system === "online") {
+        console.log("Kraken is online!")
+        // subscribe to crypto-feed
+        subscriptions.subscribe(ws, ["BTC/GBP"])
+        // subscription_message.params.symbol = crypocurrencies.map(
+        //     (currency) => `${currency}${fiatcurrency}`,
+    } else {
+        console.log("Status:", data)
+    }
+})
+
+router.on("heartbeat", (ws, data) => {
+    // no-op
+})
+
+// cannot listen more than once...
+// router.on("subscribe_response", (ws, data) => {
+//     // no-op
+// })
+
+// router.on("ticker", (ws, data) => {
+//     // no-op
+// })
+
+router.on("error", (ws, data) => {
+    console.error("Error:", data)
+})

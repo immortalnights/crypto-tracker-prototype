@@ -1,5 +1,6 @@
 import { SubscriptionManager } from "./SubscriptionManager.ts"
 import { WebSocketRouter } from "./WebSocketRouter.ts"
+import { Kafka, type TopicMessages } from "kafkajs"
 
 const KRAKEN_API_URL = "wss://ws.kraken.com/v2"
 const fiatcurrency = "GBP"
@@ -9,10 +10,21 @@ const router = new WebSocketRouter()
 const subscriptions = new SubscriptionManager(router)
 const socket = new WebSocket(KRAKEN_API_URL)
 
+const kafka = new Kafka({
+    clientId: "kraken-interface",
+    brokers: ["localhost:9092"],
+})
+
+const producer = kafka.producer()
+producer
+    .connect()
+    .then(() => console.log("Kafka producer connected!"))
+    .catch(console.error)
+// const consumer = kafka.consumer({ groupId: "kraken-interface" })
+
 // Executes when the connection is successfully established.
 socket.addEventListener("open", (event) => {
     console.log("WebSocket connection established!")
-    // socket.send("Hello Server!")
 })
 
 // Listen for messages and executes when a message is received from the server.
@@ -53,9 +65,25 @@ router.on("heartbeat", (ws, data) => {
 //     // no-op
 // })
 
-// router.on("ticker", (ws, data) => {
-//     // no-op
-// })
+// FIXME this overwrites the handler registered in the SubscriptionManager
+router.on("ticker", (ws, data) => {
+    // TODO organize the data better
+    const batch = data.data.map(
+        (entry): TopicMessages => ({
+            topic: "crypto-feed",
+            messages: Object.entries(entry).map(([key, value]) => ({
+                key,
+                value: value.toString(),
+                // partition: entry.symbol,
+                timestamp: Date.now().toString(),
+            })),
+        }),
+    )
+
+    producer.sendBatch({
+        topicMessages: batch,
+    })
+})
 
 router.on("error", (ws, data) => {
     console.error("Error:", data)

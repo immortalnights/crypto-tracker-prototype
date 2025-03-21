@@ -1,4 +1,4 @@
-import z from "zod"
+import z, { symbol } from "zod"
 
 export const systemSchema = z.union([
     z.literal("online"),
@@ -79,10 +79,11 @@ export const messageSchemas = {
             }),
         ),
     }),
-
     error: z.object({
         error: z.string(),
-        method: z.literal("error"),
+        method: z.union([z.literal("error"), z.literal("subscribe")]),
+        // If subscription error
+        symbol: z.string().optional(),
         success: z.boolean(),
         time_in: z.string(),
         time_out: z.string(),

@@ -29,10 +29,10 @@ export class WebSocketRouter {
         }
 
         let messageType: MessageType | undefined
-        let result
-        let handler
         // Try to use the correct schema
-        if ("channel" in data) {
+        if ("error" in data) {
+            messageType = "error"
+        } else if ("channel" in data) {
             if (data.channel === "status") {
                 messageType = "status"
             } else if (data.channel === "heartbeat") {
@@ -69,7 +69,12 @@ export class WebSocketRouter {
                 console.error("Unknown message received:", data)
             }
         } catch (error) {
-            console.error("Failed to parse message", error)
+            console.error(
+                "Failed to parse message",
+                message,
+                `as ${messageType}`,
+                error,
+            )
         }
     }
 }

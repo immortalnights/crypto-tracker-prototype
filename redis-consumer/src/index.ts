@@ -1,4 +1,3 @@
-import express from "express"
 import { Kafka } from "kafkajs"
 
 const kafka = new Kafka({
@@ -6,11 +5,8 @@ const kafka = new Kafka({
     brokers: ["localhost:9092"],
 })
 
-const app = express()
-const port = 8081
-
 const consumer = kafka.consumer({
-    groupId: "app-consumer",
+    groupId: "redis-consumer",
 })
 
 const run = async () => {
@@ -26,13 +22,7 @@ const run = async () => {
             console.log(topic, partition, `${message.key}#${message.value}`)
         },
     })
-
-    app.listen(port, () => {
-        console.log(`Example app listening on port ${port}`)
-    })
 }
-
-app.get("/", (req, res) => {})
 
 run()
 ;["SIGTERM", "SIGINT", "SIGUSR2"].forEach((type) => {

@@ -1,9 +1,78 @@
-import { Image, StyleSheet, Platform } from "react-native"
+import { Image, StyleSheet, Platform, View } from "react-native"
 
 import { HelloWave } from "@/components/HelloWave"
 import ParallaxScrollView from "@/components/ParallaxScrollView"
 import { ThemedText } from "@/components/ThemedText"
 import { ThemedView } from "@/components/ThemedView"
+import { usePopularCurrencies } from "@/hooks/usePopularCurrencies"
+import { Cryptocurrency } from "@/types"
+
+function CryptocurrencyIcon({ symbol }: { symbol: string }) {
+    let source
+    switch (symbol) {
+        case "BTC": {
+            source = require("@/assets/images/btc.svg")
+            break
+        }
+        case "ETH": {
+            source = require("@/assets/images/eth.svg")
+            break
+        }
+        case "SOL": {
+            source = require("@/assets/images/sol.svg")
+            break
+        }
+        case "XRP": {
+            source = require("@/assets/images/xrp.svg")
+            break
+        }
+        case "LTC": {
+            source = require("@/assets/images/ltc.svg")
+            break
+        }
+    }
+
+    return <Image source={source} style={{ width: 32, height: 32 }} />
+}
+
+function CryptocurrencyItem({ id, name, price, change }: Cryptocurrency) {
+    return (
+        <View style={{ marginBottom: 20 }}>
+            <ThemedText
+                type="defaultSemiBold"
+                style={{ display: "flex", gap: 12 }}
+            >
+                <CryptocurrencyIcon symbol={id} />
+                {id} &#183; {name}
+            </ThemedText>
+            <ThemedText type="default">£{price} | change</ThemedText>
+        </View>
+    )
+}
+
+function CryptocurrencyList({ items }: { items: Cryptocurrency[] }) {
+    return (
+        <ThemedView>
+            {items.map((item) => (
+                <CryptocurrencyItem {...item} />
+            ))}
+        </ThemedView>
+    )
+}
+
+function PopularCryptocurrencies() {
+    const currencies = usePopularCurrencies()
+
+    return (
+        <ThemedView>
+            {currencies ? (
+                <CryptocurrencyList items={currencies} />
+            ) : (
+                <ThemedText>Loading...</ThemedText>
+            )}
+        </ThemedView>
+    )
+}
 
 export default function HomeScreen() {
     return (
@@ -17,49 +86,10 @@ export default function HomeScreen() {
             }
         >
             <ThemedView style={styles.titleContainer}>
-                <ThemedText type="title">Welcome!</ThemedText>
-                <HelloWave />
+                <ThemedText type="title">Popular Cryptocurrencies!</ThemedText>
             </ThemedView>
             <ThemedView style={styles.stepContainer}>
-                <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-                <ThemedText>
-                    Edit{" "}
-                    <ThemedText type="defaultSemiBold">
-                        app/(tabs)/index.tsx
-                    </ThemedText>{" "}
-                    to see changes. Press{" "}
-                    <ThemedText type="defaultSemiBold">
-                        {Platform.select({
-                            ios: "cmd + d",
-                            android: "cmd + m",
-                            web: "F12",
-                        })}
-                    </ThemedText>{" "}
-                    to open developer tools.
-                </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.stepContainer}>
-                <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-                <ThemedText>
-                    Tap the Explore tab to learn more about what's included in
-                    this starter app.
-                </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.stepContainer}>
-                <ThemedText type="subtitle">
-                    Step 3: Get a fresh start
-                </ThemedText>
-                <ThemedText>
-                    When you're ready, run{" "}
-                    <ThemedText type="defaultSemiBold">
-                        npm run reset-project
-                    </ThemedText>{" "}
-                    to get a fresh{" "}
-                    <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-                    directory. This will move the current{" "}
-                    <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-                    <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-                </ThemedText>
+                <PopularCryptocurrencies />
             </ThemedView>
         </ParallaxScrollView>
     )

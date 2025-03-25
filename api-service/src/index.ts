@@ -1,4 +1,5 @@
 import express, { type RequestHandler } from "express"
+import cors from "cors"
 import { createClient } from "redis"
 
 const t = () => {
@@ -13,6 +14,7 @@ const t = () => {
 const redis = createClient()
 
 const app = express()
+app.use(cors())
 const port = 8081
 
 const parseDuration = (duration: string) => {
@@ -124,8 +126,8 @@ app.get(
                 website: "",
             },
             {
-                id: "XPR",
-                name: "XPRL",
+                id: "XRP",
+                name: "XRPL",
                 marketCap: 0,
                 price: 0,
                 change: 0,

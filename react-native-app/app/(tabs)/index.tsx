@@ -45,7 +45,7 @@ function CryptocurrencyItem({ id, name, price, change }: Cryptocurrency) {
                 <CryptocurrencyIcon symbol={id} />
                 {id} &#183; {name}
             </ThemedText>
-            <ThemedText type="default">£{price} | change</ThemedText>
+            <ThemedText type="default">£{price.toFixed(2)} | change</ThemedText>
         </View>
     )
 }

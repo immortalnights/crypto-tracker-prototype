@@ -6,3 +6,8 @@ services:
     restart: unless-stopped
     ports:
       - 9092:9092
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - 6379:6379

@@ -95,11 +95,51 @@ app.get(
 )
 
 app.get(
-    "/top-currencies",
+    "/popular-currencies",
     asyncHandler(async (req, res) => {
         const d = await redis.get("price:BTC/GBP")
-        console.log(d)
-        res.send(d.toString())
+        res.json([
+            {
+                id: "BTC",
+                name: "Bitcoin",
+                marketCap: 0,
+                price: d ? Number(d) : 0,
+                change: 0.0,
+                website: "https://bitcoin.org/en/",
+            },
+            {
+                id: "ETH",
+                name: "Ethereum",
+                marketCap: 0,
+                price: 0,
+                change: 0,
+                website: "",
+            },
+            {
+                id: "SOL",
+                name: "Solana",
+                marketCap: 0,
+                price: 0,
+                change: 0,
+                website: "",
+            },
+            {
+                id: "XPR",
+                name: "XPRL",
+                marketCap: 0,
+                price: 0,
+                change: 0,
+                website: "",
+            },
+            {
+                id: "LTC",
+                name: "Litecoin",
+                marketCap: 0,
+                price: 0,
+                change: 0,
+                website: "",
+            },
+        ])
     }),
 )
 

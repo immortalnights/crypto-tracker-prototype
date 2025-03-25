@@ -2,6 +2,7 @@
   "name": "historic-consumer",
   "version": "0.1.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-strip-types ./src/index.ts",
     "build": "tsc",

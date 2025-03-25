@@ -1,6 +1,6 @@
 import { SubscriptionManager } from "./SubscriptionManager.ts"
 import { WebSocketRouter } from "./WebSocketRouter.ts"
-import { Kafka, type TopicMessages } from "kafkajs"
+import { Kafka, type Message } from "kafkajs"
 
 const KRAKEN_API_URL = "wss://ws.kraken.com/v2"
 const fiatcurrency = "GBP"
@@ -74,24 +74,31 @@ router.on("ticker", (ws, data) => {
         `Received ticker data for ${data.data.map((entry) => entry.symbol).join(", ")} at ${new Date().toISOString()}`,
     )
 
-    // TODO organize the data better
-    const batch = data.data.map(
-        (entry): TopicMessages => ({
-            topic: "crypto-feed",
-            messages: Object.entries(entry).map(([key, value]) => ({
-                key,
-                value: value.toString(),
-                // partition: entry.symbol,
-                timestamp: Date.now().toString(),
-            })),
-        }),
-    )
-
     producer.sendBatch({
-        topicMessages: batch,
+        topicMessages: [
+            {
+                topic: "crypto-feed",
+                messages: data.data.map(
+                    ({ symbol, ...rest }): Message => ({
+                        key: symbol,
+                        value: JSON.stringify(rest),
+                    }),
+                ),
+            },
+        ],
     })
 })
 
 router.on("error", (ws, data) => {
     console.error("Error:", data)
+})
+;["SIGTERM", "SIGINT", "SIGUSR2"].forEach((type) => {
+    process.once(type, async () => {
+        try {
+            socket.close()
+            await producer.disconnect()
+        } finally {
+            process.kill(process.pid, type)
+        }
+    })
 })

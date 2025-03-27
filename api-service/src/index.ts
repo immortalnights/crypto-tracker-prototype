@@ -79,23 +79,6 @@ const asyncHandler = (fn: RequestHandler) =>
         return Promise.resolve(fnReturn).catch(next)
     }
 
-app.get(
-    "/price/:symbol/:duration",
-    asyncHandler(async (req, res) => {
-        const { symbol, duration } = req.params
-
-        const durationInSeconds = calculateDuration(duration)
-
-        // 1hr default
-        const now = Date.now()
-        const cutoffTime = now - durationInSeconds
-        const key = `history:${symbol.replace("-", "/")}`
-        const data = await redis.zRangeByScore(key, cutoffTime, now)
-
-        res.json(data)
-    }),
-)
-
 const popularCurrencies = [
     {
         id: "BTC",
@@ -138,6 +121,23 @@ const popularCurrencies = [
         website: "",
     },
 ]
+
+app.get(
+    "/price/:symbol/:duration",
+    asyncHandler(async (req, res) => {
+        const { symbol, duration } = req.params
+
+        const durationInSeconds = calculateDuration(duration)
+
+        // 1hr default
+        const now = Date.now()
+        const cutoffTime = now - durationInSeconds
+        const key = `history:${symbol.replace("-", "/")}`
+        const data = await redis.zRangeByScore(key, cutoffTime, now)
+
+        res.json(data.map((entry) => Number(entry)))
+    }),
+)
 
 app.get(
     "/popular-currencies",

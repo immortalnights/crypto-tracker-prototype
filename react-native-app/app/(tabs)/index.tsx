@@ -1,11 +1,10 @@
-import { Image, StyleSheet, Platform, View } from "react-native"
-
-import { HelloWave } from "@/components/HelloWave"
+import { Image, StyleSheet, View, TouchableHighlight } from "react-native"
 import ParallaxScrollView from "@/components/ParallaxScrollView"
 import { ThemedText } from "@/components/ThemedText"
 import { ThemedView } from "@/components/ThemedView"
 import { usePopularCurrencies } from "@/hooks/usePopularCurrencies"
 import { Cryptocurrency } from "@/types"
+import AntDesign from "@expo/vector-icons/AntDesign"
 
 function CryptocurrencyIcon({ symbol }: { symbol: string }) {
     let source
@@ -35,26 +34,97 @@ function CryptocurrencyIcon({ symbol }: { symbol: string }) {
     return <Image source={source} style={{ width: 32, height: 32 }} />
 }
 
-function CryptocurrencyItem({ id, name, price, change }: Cryptocurrency) {
+function Price({ value }: { value: number | undefined }) {
     return (
-        <View style={{ marginBottom: 20 }}>
+        <ThemedText style={{ fontSize: 14, lineHeight: 16 }}>
+            {value !== undefined ? `£${value.toFixed(2)}` : ``}
+        </ThemedText>
+    )
+}
+
+function PriceChangePercent({ value }: { value: number | undefined }) {
+    let content
+    if (value !== undefined) {
+        const direction =
+            value < 0 ? ("decreasing" as const) : ("increasing" as const)
+        content = (
             <ThemedText
-                type="defaultSemiBold"
-                style={{ display: "flex", gap: 12 }}
+                style={{
+                    color: direction === "increasing" ? "green" : "red",
+                    textAlign: "right",
+                    fontSize: 12,
+                    lineHeight: 16,
+                }}
             >
-                <CryptocurrencyIcon symbol={id} />
-                {id} &#183; {name}
+                {direction === "increasing" ? (
+                    <AntDesign name="caretup" size={10} />
+                ) : (
+                    <AntDesign name="caretdown" size={10} />
+                )}
+                {value.toFixed(2)}%
             </ThemedText>
-            <ThemedText type="default">£{price.toFixed(2)} | change</ThemedText>
-        </View>
+        )
+    }
+
+    return content
+}
+
+function CryptocurrencyItem({
+    currency: { id, name, price, change },
+    onSelectItem,
+}: {
+    currency: Cryptocurrency
+    onSelectItem: () => void
+}) {
+    return (
+        <TouchableHighlight onPress={onSelectItem}>
+            <View
+                style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                }}
+            >
+                <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+                    <View style={{ display: "flex", justifyContent: "center" }}>
+                        <CryptocurrencyIcon symbol={id} />
+                    </View>
+                    <View style={{ display: "flex", flexDirection: "column" }}>
+                        <ThemedText type="defaultSemiBold">{name}</ThemedText>
+                        <ThemedText
+                            type="default"
+                            style={{
+                                color: "darkgray",
+                                fontSize: 14,
+                                lineHeight: 16,
+                            }}
+                        >
+                            {id}
+                        </ThemedText>
+                    </View>
+                </View>
+                <View
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                    }}
+                >
+                    <Price value={price} />{" "}
+                    <PriceChangePercent value={change} />
+                </View>
+            </View>
+        </TouchableHighlight>
     )
 }
 
 function CryptocurrencyList({ items }: { items: Cryptocurrency[] }) {
     return (
-        <ThemedView>
+        <ThemedView style={{ display: "flex", gap: 16, maxWidth: 260 }}>
             {items.map((item) => (
-                <CryptocurrencyItem {...item} />
+                <CryptocurrencyItem currency={item} onSelectItem={() => {}} />
             ))}
         </ThemedView>
     )

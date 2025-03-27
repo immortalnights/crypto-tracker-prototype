@@ -4,7 +4,7 @@ import { Kafka, type Message } from "kafkajs"
 
 const KRAKEN_API_URL = "wss://ws.kraken.com/v2"
 const fiatcurrency = "GBP"
-const crypocurrencies = ["BTC"] // , "ETH", "SOL", "XRP", "LTC", "USDT"]
+const crypocurrencies = ["BTC", "ETH", "SOL", "XRP", "LTC"]
 
 const router = new WebSocketRouter()
 const subscriptions = new SubscriptionManager(router)

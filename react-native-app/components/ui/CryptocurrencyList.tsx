@@ -51,7 +51,8 @@ function CryptocurrencyItem({
                         justifyContent: "center",
                     }}
                 >
-                    <Price value={price} /> <ChangePercent value={change} />
+                    <Price value={price} />
+                    <ChangePercent value={change} />
                 </View>
             </View>
         </TouchableHighlight>

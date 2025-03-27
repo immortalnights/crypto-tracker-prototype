@@ -14,6 +14,14 @@ const consumer = kafka.consumer({
     groupId: "redis-consumer",
 })
 
+const get = <V extends string | number | undefined>(
+    obj: object,
+    key: string,
+): V => {
+    const value = key in obj ? obj[key as keyof object] : undefined
+    return value as V
+}
+
 const run = async () => {
     await consumer
         .connect()
@@ -29,11 +37,19 @@ const run = async () => {
             console.log(topic, partition, `${message.key}#${message.value}`)
             const data = JSON.parse(message.value?.toString() ?? "") as object
 
-            const symbol = message.key
-            if ("last" in data && typeof data.last === "number") {
-                const price = data.last
-                // Store the latest price for this symbol
-                await redis.set(`price:${symbol}`, price)
+            try {
+                const symbol = message.key
+                const price = get<number>(data, "last")
+                const change = get<number>(data, "change_pct")
+
+                // Store the latest price and change percent for this symbol
+                if (price) {
+                    await redis.set(`price:${symbol}`, price)
+                }
+
+                if (change) {
+                    await redis.set(`change:${symbol}`, change)
+                }
 
                 const historyKey = `history:${symbol}`
                 const timestamp = Date.now()
@@ -45,7 +61,7 @@ const run = async () => {
                 // Remove prices older than 24 hours
                 const cutoffTime = timestamp - 24 * 60 * 60 * 1000
                 await redis.zRemRangeByScore(historyKey, 0, cutoffTime)
-            }
+            } catch (err) {}
         },
     })
 }

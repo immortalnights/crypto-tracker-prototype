@@ -15,7 +15,7 @@ const redis = createClient()
 
 const app = express()
 app.use(cors())
-const port = 8081
+const port = 80
 
 const parseDuration = (duration: string) => {
     const [value, unit] = duration.split("-")
@@ -96,52 +96,69 @@ app.get(
     }),
 )
 
+const popularCurrencies = [
+    {
+        id: "BTC",
+        name: "Bitcoin",
+        marketCap: 0,
+        price: 0,
+        change: 0,
+        website: "https://bitcoin.org/en/",
+    },
+    {
+        id: "ETH",
+        name: "Ethereum",
+        marketCap: 0,
+        price: 0,
+        change: 0,
+        website: "",
+    },
+    {
+        id: "SOL",
+        name: "Solana",
+        marketCap: 0,
+        price: 0,
+        change: 0,
+        website: "",
+    },
+    {
+        id: "XRP",
+        name: "XRPL",
+        marketCap: 0,
+        price: 0,
+        change: 0,
+        website: "",
+    },
+    {
+        id: "LTC",
+        name: "Litecoin",
+        marketCap: 0,
+        price: 0,
+        change: 0,
+        website: "",
+    },
+]
+
 app.get(
     "/popular-currencies",
     asyncHandler(async (req, res) => {
-        const d = await redis.get("price:BTC/GBP")
-        res.json([
-            {
-                id: "BTC",
-                name: "Bitcoin",
-                marketCap: 0,
-                price: d ? Number(d) : 0,
-                change: 0.0,
-                website: "https://bitcoin.org/en/",
-            },
-            {
-                id: "ETH",
-                name: "Ethereum",
-                marketCap: 0,
-                price: 0,
-                change: 0,
-                website: "",
-            },
-            {
-                id: "SOL",
-                name: "Solana",
-                marketCap: 0,
-                price: 0,
-                change: 0,
-                website: "",
-            },
-            {
-                id: "XRP",
-                name: "XRPL",
-                marketCap: 0,
-                price: 0,
-                change: 0,
-                website: "",
-            },
-            {
-                id: "LTC",
-                name: "Litecoin",
-                marketCap: 0,
-                price: 0,
-                change: 0,
-                website: "",
-            },
-        ])
+        const priceKeys = popularCurrencies.map(
+            (item) => `price:${item.id}/GBP`,
+        )
+        const changeKeys = popularCurrencies.map(
+            (item) => `change:${item.id}/GBP`,
+        )
+
+        const prices = await redis.mGet(priceKeys)
+        const changes = await redis.mGet(changeKeys)
+
+        const data = popularCurrencies.map((item, index) => ({
+            ...item,
+            price: prices[index] ? Number(prices[index]) : undefined,
+            change: changes[index] ? Number(changes[index]) : undefined,
+        }))
+
+        res.json(data)
     }),
 )
 

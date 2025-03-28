@@ -1,8 +1,9 @@
 import { ThemedText } from "@/components/ThemedText"
 import { ThemedView } from "@/components/ThemedView"
-import { Stack, Link } from "expo-router"
+import { Stack } from "expo-router"
 import { View } from "react-native"
 import PopularCryptocurrencies from "@/components/ui/PopularCryptocurrencies"
+import { ErrorBoundary } from "react-error-boundary"
 
 export default function List() {
     return (
@@ -12,8 +13,10 @@ export default function List() {
                     headerTitle: "Popular Cryptocurrencies",
                 }}
             />
-            <ThemedView style={{ flex: 1 }}>
-                <PopularCryptocurrencies />
+            <ThemedView style={{ padding: 12, flex: 1 }}>
+                <ErrorBoundary fallback={<ThemedText>Error</ThemedText>}>
+                    <PopularCryptocurrencies />
+                </ErrorBoundary>
             </ThemedView>
         </View>
     )

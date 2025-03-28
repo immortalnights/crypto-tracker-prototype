@@ -3,15 +3,18 @@ import { useEffect, useState } from "react"
 
 export function useHistoricCurrencyPrices(
     symbol: string,
-    fiat?: string = "GBP",
+    fiat: string = "GBP",
 ) {
+    const url = `${process.env.EXPO_PUBLIC_API_URL}/price/${symbol}-${fiat}/1-hour`
+
     const [data, setData] = useState<number[]>()
     const get = async () => {
-        const res = await fetch(
-            `http://127.0.0.1/price/${symbol}-${fiat}/1-hour`,
-        )
+        const res = await fetch(url)
         if (res.ok) {
             setData(await res.json())
+        } else {
+            console.error(`Failed to fetch from ${url}`)
+            throw new Error(`Failed to fetch from '${url}'`)
         }
     }
 

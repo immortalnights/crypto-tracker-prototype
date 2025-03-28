@@ -2,9 +2,11 @@ import { Cryptocurrency } from "@/types"
 import { useEffect, useState } from "react"
 
 export function useCryptocurrency(symbol: string) {
+    const url = `${process.env.EXPO_PUBLIC_API_URL}/popular-currencies/`
+
     const [data, setData] = useState<Cryptocurrency>()
     const get = async () => {
-        const res = await fetch("http://127.0.0.1/popular-currencies/")
+        const res = await fetch(url)
         if (res.ok) {
             const json = await res.json()
 
@@ -19,6 +21,9 @@ export function useCryptocurrency(symbol: string) {
                     ),
                 )
             }
+        } else {
+            console.error(`Failed to fetch from ${url}`)
+            throw new Error(`Failed to fetch from '${url}'`)
         }
     }
 

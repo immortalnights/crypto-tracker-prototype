@@ -8,7 +8,7 @@ export default function PopularCryptocurrencies() {
     const currencies = usePopularCurrencies()
 
     return (
-        <ThemedView>
+        <ThemedView style={{ flex: 1 }}>
             {currencies ? (
                 <CryptocurrencyList items={currencies} />
             ) : (

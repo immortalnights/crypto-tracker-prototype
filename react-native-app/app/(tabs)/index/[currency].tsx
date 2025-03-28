@@ -11,7 +11,7 @@ import { ActivityIndicator, View } from "react-native"
 
 function CryptocurrencyDetails({ id, name, price, change }: Cryptocurrency) {
     return (
-        <ThemedView style={{ padding: 12 }}>
+        <ThemedView style={{ padding: 12, flex: 1 }}>
             <View
                 style={{
                     paddingHorizontal: 14,
@@ -88,7 +88,7 @@ export default function List() {
     }
 
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <Stack.Screen
                 options={{ title: "Details" }}
                 getId={({ params }) => {

@@ -6,13 +6,13 @@ import PopularCryptocurrencies from "@/components/ui/PopularCryptocurrencies"
 
 export default function List() {
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <Stack.Screen
                 options={{
                     headerTitle: "Popular Cryptocurrencies",
                 }}
             />
-            <ThemedView>
+            <ThemedView style={{ flex: 1 }}>
                 <PopularCryptocurrencies />
             </ThemedView>
         </View>

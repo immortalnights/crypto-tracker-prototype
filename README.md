@@ -1,11 +1,28 @@
 
+# Cryptocurrency Price Tracker Prototype
 
+## Services
 
+### Kraken Ingestion
 
+```
+npm run dev
+```
 
+### Redis Consumer
 
+```
+npm run dev
+```
 
+### API Service
 
-### Notes
+```
+npm run dev
+```
 
-- Does TypeScript need to be configured for each service?
+### React App
+
+```
+npm run start
+```

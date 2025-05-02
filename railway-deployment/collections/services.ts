@@ -59,6 +59,18 @@ const serviceInstanceUpdateMutation = gql`
     }
 `
 
+const serviceInstanceDeployMutation = gql`
+    mutation serviceInstanceDeployV2(
+        $environmentId: String!
+        $serviceId: String!
+    ) {
+        serviceInstanceDeployV2(
+            environmentId: $environmentId
+            serviceId: $serviceId
+        )
+    }
+`
+
 export async function createDockerService(
     client: GraphQLClient,
     projectId: string,
@@ -105,9 +117,12 @@ export async function createService(
     await client.request(serviceInstanceUpdateMutation, {
         input: {
             rootDirectory,
+            builder: "RAILPACK",
         },
         serviceId: service.serviceCreate.id,
     })
+
+    return service
 }
 
 export async function createRedisService(
@@ -171,6 +186,20 @@ export async function createKafkaService(
         service.serviceCreate.id,
         "/bitnami/kafka",
     )
+}
+
+export async function deployService(
+    client: GraphQLClient,
+    service: ServiceInstance,
+    environmentId: string,
+) {
+    console.log(
+        `Deploying service ${service.serviceName} (${service.serviceId})...`,
+    )
+    return client.request(serviceInstanceDeployMutation, {
+        environmentId,
+        serviceId: service.serviceId,
+    })
 }
 
 export async function deleteService(

@@ -1,10 +1,10 @@
 import { GraphQLClient } from "graphql-request"
 import {
-    createDockerService,
     createKafkaService,
     createRedisService,
     createService,
     deleteService,
+    deployService,
 } from "./collections/services.ts"
 import { getProject } from "./collections/project.ts"
 
@@ -57,16 +57,34 @@ async function run() {
     const redisService = await createRedisService(client, projectId, "redis")
     const kafkaService = await createKafkaService(client, projectId, "kafka")
     // console.log("Creating Kraken Ingestion Service service...")
-    await createService(
+    const krakenService = await createService(
         client,
         projectId,
         "kraken-ingestion-service",
         "kraken-ingestion-service",
         { KAFKA_URL: "${{kafka.KAFKA_URL}}" },
     )
-    // await createService("kraken-api")
-    // await createService("api-service")
-    // await createService("frontend")
+    // const await createService(client, projectId, "redis-consumer", "redis-consumer")
+    // await createService(client, projectId, "api-service", "api-service")
+    // await createService(client, projectId, "frontend", "react-native-app")
+
+    const response = await getProject(client, projectId)
+    const productionEnv = unwrapEdge(response.project.environments.edges).find(
+        (env) => env.name === "production",
+    )
+
+    if (productionEnv) {
+        console.log("kraken service", krakenService)
+        await deployService(
+            client,
+            {
+                id: "",
+                serviceId: krakenService.serviceCreate.id!,
+                serviceName: krakenService.serviceCreate.name,
+            },
+            productionEnv.id,
+        )
+    }
 }
 
 run().catch((error) => {

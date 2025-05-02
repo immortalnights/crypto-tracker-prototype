@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "run": "node --env-file ./.env --experimental-strip-types ./index.ts"
+    "deploy": "node --env-file ./.env --experimental-strip-types ./index.ts"
   },
   "dependencies": {
     "@railway/cli": "^4.0.0",

@@ -118,6 +118,7 @@ export async function createService(
         input: {
             rootDirectory,
             builder: "RAILPACK",
+            restartPolicyMaxRetries: 2,
         },
         serviceId: service.serviceCreate.id,
     })
@@ -149,6 +150,8 @@ export async function createRedisService(
 
     console.log("Adding Redis service volume...")
     await volumeCreate(client, projectId, service.serviceCreate.id, "/bitnami")
+
+    return service
 }
 
 export async function createKafkaService(
@@ -186,6 +189,8 @@ export async function createKafkaService(
         service.serviceCreate.id,
         "/bitnami/kafka",
     )
+
+    return service
 }
 
 export async function deployService(

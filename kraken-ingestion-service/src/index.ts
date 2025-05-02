@@ -12,7 +12,7 @@ const socket = new WebSocket(KRAKEN_API_URL)
 
 const kafka = new Kafka({
     clientId: "kraken-interface",
-    brokers: ["localhost:9092"],
+    brokers: [process.env.KAFKA_URL],
 })
 
 const producer = kafka.producer({})

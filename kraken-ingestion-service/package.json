@@ -5,21 +5,25 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --experimental-strip-types ./src/index.ts",
-    "build": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist",
     "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=22.14.0"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "kafkajs": "^2.2.4",
-    "zod": "^3.24.2"
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/node": "^22.13.13",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.2"
   },
   "nodemonConfig": {

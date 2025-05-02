@@ -1,13 +1,16 @@
 import { Kafka } from "kafkajs"
 import { createClient } from "redis"
 
-const redis = createClient()
+const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379"
+const KAFKA_URL = process.env.KAFKA_URL ?? "localhost:9092"
+
+const redis = createClient({ url: REDIS_URL })
 
 // redis.on('error', (err) => console.log('Redis Client Error', err));
 
 const kafka = new Kafka({
     clientId: "app-backend",
-    brokers: ["localhost:9092"],
+    brokers: [KAFKA_URL],
 })
 
 const consumer = kafka.consumer({

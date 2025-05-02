@@ -2,6 +2,8 @@ import express, { type RequestHandler } from "express"
 import cors from "cors"
 import { createClient } from "redis"
 
+const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379"
+
 const t = () => {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -11,7 +13,7 @@ const t = () => {
     })
 }
 
-const redis = createClient()
+const redis = createClient({ url: REDIS_URL })
 
 const app = express()
 app.use(cors())

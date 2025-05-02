@@ -3,6 +3,7 @@ import { WebSocketRouter } from "./WebSocketRouter.ts"
 import { Kafka, type Message } from "kafkajs"
 
 const KRAKEN_API_URL = "wss://ws.kraken.com/v2"
+const KAFKA_URL = process.env.KAFKA_URL ?? "localhost:9092"
 const fiatcurrency = "GBP"
 const crypocurrencies = ["BTC", "ETH", "SOL", "XRP", "LTC"]
 
@@ -10,9 +11,11 @@ const router = new WebSocketRouter()
 const subscriptions = new SubscriptionManager(router)
 const socket = new WebSocket(KRAKEN_API_URL)
 
+console.info(`Kafka URL ${KAFKA_URL}`)
+
 const kafka = new Kafka({
     clientId: "kraken-interface",
-    brokers: [process.env.KAFKA_URL ?? "localhost:9092"],
+    brokers: [KAFKA_URL],
 })
 
 const producer = kafka.producer({})

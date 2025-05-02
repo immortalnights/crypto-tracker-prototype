@@ -150,6 +150,13 @@ export async function createKafkaService(
         {
             KAFKA_URL: "kafka.railway.internal:9092",
             KAFKA_PORT: "9092",
+            KAFKA_CFG_NODE_ID: "0",
+            KAFKA_CFG_PROCESS_ROLES: "controller,broker",
+            KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093",
+            KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP:
+                "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
+            KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@kafka:9093",
+            KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER",
             // KAFKA_ADVERTISED_LISTENERS:
             //     "PLAINTEXT://kafka.railway.internal:9092",
             // KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT",
@@ -162,7 +169,7 @@ export async function createKafkaService(
         client,
         projectId,
         service.serviceCreate.id,
-        "/var/lib/kafka/data",
+        "/bitnami/kafka",
     )
 }
 
@@ -183,7 +190,9 @@ export async function deleteService(
         console.log(
             `Deleting ${volumes.length} volumes for service ${service.serviceName}...`,
         )
-        const req = volumes.map((volume) => volumeDelete(client, volume.id))
+        const req = volumes.map((volume) =>
+            volumeDelete(client, volume.volumeId),
+        )
         await Promise.all(req)
     }
 }

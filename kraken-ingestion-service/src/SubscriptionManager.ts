@@ -6,10 +6,10 @@ import {
 import { WebSocketRouter } from "./WebSocketRouter.ts"
 
 export class SubscriptionManager {
-    private subscriptions: string[] = []
+    // private subscriptions: string[] = []
 
     constructor(router: WebSocketRouter) {
-        router.on("subscribe_response", (ws, data) => {
+        router.on("subscribe_response", (_ws, data) => {
             // if data.success is true, record the subscription and handle the ticker messages
             if (data.success) {
                 console.debug(
@@ -18,7 +18,7 @@ export class SubscriptionManager {
             }
         })
 
-        router.on("unsubscribe_response", (ws, data) => {
+        router.on("unsubscribe_response", (_ws, data) => {
             // if data.success is true, remove the subscription
             if (data.success) {
                 console.debug(
@@ -27,7 +27,7 @@ export class SubscriptionManager {
             }
         })
 
-        router.on("ticker", (ws, data) => {
+        router.on("ticker", (_ws, _data) => {
             // check subscription for symbol
         })
     }

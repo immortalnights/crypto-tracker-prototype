@@ -1,4 +1,4 @@
-import z from "zod"
+import { z } from "zod"
 import { messageSchemas, type MessageType } from "./schema.ts"
 
 type Handler = <T extends MessageType>(

@@ -12,7 +12,7 @@ const socket = new WebSocket(KRAKEN_API_URL)
 
 const kafka = new Kafka({
     clientId: "kraken-interface",
-    brokers: [process.env.KAFKA_URL],
+    brokers: [process.env.KAFKA_URL ?? "localhost:9092"],
 })
 
 const producer = kafka.producer({})
@@ -23,7 +23,7 @@ producer
 // const consumer = kafka.consumer({ groupId: "kraken-interface" })
 
 // Executes when the connection is successfully established.
-socket.addEventListener("open", (event) => {
+socket.addEventListener("open", (_event) => {
     console.log("WebSocket connection established!")
 })
 
@@ -59,7 +59,7 @@ router.on("status", (ws, { data: dataArray }) => {
     }
 })
 
-router.on("heartbeat", (ws, data) => {
+router.on("heartbeat", (_ws, _data) => {
     // no-op
 })
 
@@ -69,9 +69,9 @@ router.on("heartbeat", (ws, data) => {
 // })
 
 // FIXME this overwrites the handler registered in the SubscriptionManager
-router.on("ticker", (ws, data) => {
+router.on("ticker", (_ws, data) => {
     console.log(
-        `Received ticker data for ${data.data.map((entry) => entry.symbol).join(", ")} at ${new Date().toISOString()}`,
+        `Received ticker data for ${data.data.map((entry: any) => entry.symbol).join(", ")} at ${new Date().toISOString()}`,
     )
 
     producer.sendBatch({
@@ -89,7 +89,7 @@ router.on("ticker", (ws, data) => {
     })
 })
 
-router.on("error", (ws, data) => {
+router.on("error", (_ws, data) => {
     console.error("Error:", data)
 })
 ;["SIGTERM", "SIGINT", "SIGUSR2"].forEach((type) => {

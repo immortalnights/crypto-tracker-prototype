@@ -9,7 +9,7 @@ const crypocurrencies = ["BTC", "ETH", "SOL", "XRP", "LTC"]
 
 const router = new WebSocketRouter()
 const subscriptions = new SubscriptionManager(router)
-const socket = new WebSocket(KRAKEN_API_URL)
+let socket: WebSocket | null = null
 
 console.info(`Kafka URL ${KAFKA_URL}`)
 
@@ -18,33 +18,40 @@ const kafka = new Kafka({
     brokers: [KAFKA_URL],
 })
 
+const connectToKraken = () => {
+    socket = new WebSocket(KRAKEN_API_URL)
+
+    // Executes when the connection is successfully established.
+    socket.addEventListener("open", (_event) => {
+        console.log("WebSocket connection established!")
+    })
+
+    // Listen for messages and executes when a message is received from the server.
+    socket.addEventListener("message", (event) => {
+        // console.debug("Message from server:", event.data)
+        router.handleMessage(socket!, event.data)
+    })
+
+    // Executes when the connection is closed, providing the close code and reason.
+    socket.addEventListener("close", (event) => {
+        console.log("WebSocket connection closed:", event.code, event.reason)
+    })
+
+    // Executes if an error occurs during the WebSocket communication.
+    socket.addEventListener("error", (error) => {
+        console.error("WebSocket error:", error)
+    })
+}
+
 const producer = kafka.producer({})
 producer
     .connect()
-    .then(() => console.log("Kafka producer connected!"))
+    .then(() => {
+        console.log("Kafka producer connected!")
+        connectToKraken()
+    })
     .catch(console.error)
 // const consumer = kafka.consumer({ groupId: "kraken-interface" })
-
-// Executes when the connection is successfully established.
-socket.addEventListener("open", (_event) => {
-    console.log("WebSocket connection established!")
-})
-
-// Listen for messages and executes when a message is received from the server.
-socket.addEventListener("message", (event) => {
-    // console.debug("Message from server:", event.data)
-    router.handleMessage(socket, event.data)
-})
-
-// Executes when the connection is closed, providing the close code and reason.
-socket.addEventListener("close", (event) => {
-    console.log("WebSocket connection closed:", event.code, event.reason)
-})
-
-// Executes if an error occurs during the WebSocket communication.
-socket.addEventListener("error", (error) => {
-    console.error("WebSocket error:", error)
-})
 
 router.on("status", (ws, { data: dataArray }) => {
     const [data] = dataArray
@@ -98,7 +105,9 @@ router.on("error", (_ws, data) => {
 ;["SIGTERM", "SIGINT", "SIGUSR2"].forEach((type) => {
     process.once(type, async () => {
         try {
-            socket.close()
+            if (socket) {
+                socket.close()
+            }
             await producer.disconnect()
         } finally {
             process.kill(process.pid, type)

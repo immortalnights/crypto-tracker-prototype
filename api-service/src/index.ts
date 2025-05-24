@@ -163,7 +163,7 @@ app.get(
 )
 
 const run = async () => {
-    // await redis.connect()
+    await redis.connect()
 
     app.listen(port, () => {
         console.log(`API listening on port ${port}`)

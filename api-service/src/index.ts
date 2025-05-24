@@ -4,15 +4,6 @@ import { createClient } from "redis"
 
 const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379"
 
-const t = () => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log("done")
-            resolve("Hello")
-        }, 1000)
-    })
-}
-
 const redis = createClient({ url: REDIS_URL })
 
 const app = express()
@@ -75,10 +66,11 @@ const calculateDuration = (duration: string): number => {
 }
 
 const asyncHandler = (fn: RequestHandler) =>
-    function wrapper(...rest: any[]) {
+    function wrapper(...rest: Parameters<RequestHandler>) {
         const fnReturn = fn(...rest)
         const next = rest[rest.length - 1]
-        return Promise.resolve(fnReturn).catch(next)
+        // FIX use of any
+        return Promise.resolve(fnReturn).catch(next as any)
     }
 
 const popularCurrencies = [
@@ -143,7 +135,7 @@ app.get(
 
 app.get(
     "/popular-currencies",
-    asyncHandler(async (req, res) => {
+    asyncHandler(async (_req, res) => {
         const priceKeys = popularCurrencies.map(
             (item) => `price:${item.id}/GBP`,
         )

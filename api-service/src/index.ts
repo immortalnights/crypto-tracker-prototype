@@ -116,6 +116,12 @@ const popularCurrencies = [
     },
 ]
 
+app.get("/", (_req, res) => {
+    res.json({
+        status: "OK",
+    })
+})
+
 app.get(
     "/price/:symbol/:duration",
     asyncHandler(async (req, res) => {
@@ -157,10 +163,10 @@ app.get(
 )
 
 const run = async () => {
-    await redis.connect()
+    // await redis.connect()
 
     app.listen(port, () => {
-        console.log(`Example app listening on port ${port}`)
+        console.log(`API listening on port ${port}`)
     })
 }
 

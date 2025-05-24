@@ -56,17 +56,43 @@ async function run() {
 
     const redisService = await createRedisService(client, projectId, "redis")
     const kafkaService = await createKafkaService(client, projectId, "kafka")
-    // console.log("Creating Kraken Ingestion Service service...")
+    console.log("Creating Kraken Ingestion Service service...")
     const krakenService = await createService(
         client,
         projectId,
         "kraken-ingestion-service",
-        "kraken-ingestion-service",
+        "/kraken-ingestion-service",
         { KAFKA_URL: "${{kafka.KAFKA_URL}}" },
     )
-    // const await createService(client, projectId, "redis-consumer", "redis-consumer")
-    // await createService(client, projectId, "api-service", "api-service")
-    // await createService(client, projectId, "frontend", "react-native-app")
+    const redisConsumerService = await createService(
+        client,
+        projectId,
+        "redis-consumer",
+        "/redis-consumer",
+        {
+            KAFKA_URL: "${{kafka.KAFKA_URL}}",
+            REDIS_URL: "${{redis.REDIS_URL}}",
+        },
+    )
+    const apiService = await createService(
+        client,
+        projectId,
+        "api-service",
+        "/api-service",
+        {
+            REDIS_URL: "${{redis.REDIS_URL}}",
+            API_URL: "${{RAILWAY_PRIVATE_DOMAIN}}",
+        },
+    )
+    const appService = await createService(
+        client,
+        projectId,
+        "frontend",
+        "/react-native-app",
+        {
+            API_URL: "${{api-service.API_URL}}",
+        },
+    )
 
     const response = await getProject(client, projectId)
     const productionEnv = unwrapEdge(response.project.environments.edges).find(
@@ -74,13 +100,39 @@ async function run() {
     )
 
     if (productionEnv) {
-        console.log("kraken service", krakenService)
         await deployService(
             client,
             {
                 id: "",
                 serviceId: krakenService.serviceCreate.id!,
                 serviceName: krakenService.serviceCreate.name,
+            },
+            productionEnv.id,
+        )
+        await deployService(
+            client,
+            {
+                id: "",
+                serviceId: redisConsumerService.serviceCreate.id!,
+                serviceName: redisConsumerService.serviceCreate.name,
+            },
+            productionEnv.id,
+        )
+        await deployService(
+            client,
+            {
+                id: "",
+                serviceId: apiService.serviceCreate.id!,
+                serviceName: apiService.serviceCreate.name,
+            },
+            productionEnv.id,
+        )
+        await deployService(
+            client,
+            {
+                id: "",
+                serviceId: appService.serviceCreate.id!,
+                serviceName: appService.serviceCreate.name,
             },
             productionEnv.id,
         )

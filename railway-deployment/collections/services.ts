@@ -184,21 +184,23 @@ export async function createKafkaService(
     name: string,
 ) {
     console.log(`Creating Kafka service '${name}'...`)
+    const port = "9092"
     const service = await createDockerService(
         client,
         projectId,
         name,
         "bitnami/kafka:4.0.0",
         {
-            KAFKA_URL: "${{RAILWAY_PRIVATE_DOMAIN}}",
-            KAFKA_PORT: "9092",
-            KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://${{KAFKA_URL}}:9092",
+            KAFKA_URL: `\${{RAILWAY_PRIVATE_DOMAIN}}:${port}`,
+            KAFKA_PORT: port,
+            KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://${{KAFKA_URL}}",
             KAFKA_CFG_NODE_ID: "1",
             KAFKA_CFG_PROCESS_ROLES: "controller,broker",
-            KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093",
+            KAFKA_CFG_LISTENERS: `PLAINTEXT://:${port},CONTROLLER://:9093`,
             KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP:
                 "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
-            KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@${{KAFKA_URL}}:9093",
+            KAFKA_CFG_CONTROLLER_QUORUM_VOTERS:
+                "1@${{RAILWAY_PRIVATE_DOMAIN}}:9093",
             KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER",
         },
     )

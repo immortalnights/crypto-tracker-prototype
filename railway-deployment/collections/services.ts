@@ -59,6 +59,12 @@ const serviceInstanceUpdateMutation = gql`
     }
 `
 
+const serviceConnectMutation = gql`
+    mutation serviceConnect($id: String!, $input: ServiceConnectInput!) {
+        serviceConnect(id: $id, input: $input)
+    }
+`
+
 const serviceInstanceDeployMutation = gql`
     mutation serviceInstanceDeployV2(
         $environmentId: String!
@@ -113,6 +119,10 @@ export async function createService(
         },
     )
 
+    console.debug(
+        `Created service ${service.serviceCreate.name} (${service.serviceCreate.id})`,
+    )
+
     console.log("Setting service root directory...")
     await client.request(serviceInstanceUpdateMutation, {
         input: {
@@ -122,6 +132,20 @@ export async function createService(
         },
         serviceId: service.serviceCreate.id,
     })
+
+    // FIXME this failing, but I cannot identify why...
+    try {
+        console.log("Connecting service to github...")
+        await client.request(serviceConnectMutation, {
+            id: service.serviceCreate.id,
+            input: {
+                repo: "immortalnights/crypto-tracker-prototype",
+                branch: "main",
+            },
+        })
+    } catch (err) {
+        console.error("Failed to connect service to GitHub:", err)
+    }
 
     return service
 }
@@ -138,13 +162,13 @@ export async function createRedisService(
         name,
         "bitnami/redis:7.2.5",
         {
-            REDISHOST: "redis.railway.internal",
+            REDISHOST: "${{RAILWAY_PRIVATE_DOMAIN}}",
             REDISPORT: "6379",
             REDISUSER: "default",
             REDIS_PASSWORD: "thisismypassword",
-            REDISPASSWORD: "thisismypassword",
+            REDISPASSWORD: "${{REDIS_PASSWORD}}",
             REDIS_URL:
-                "redis://default:thisismypassword@redis.railway.internal:6379",
+                "redis://default:${{REDISPASSWORD}}@${{REDISHOST}}:${{REDISPORT}}",
         },
     )
 
@@ -166,28 +190,17 @@ export async function createKafkaService(
         name,
         "bitnami/kafka:4.0.0",
         {
-            KAFKA_URL: "kafka.railway.internal:9092",
+            KAFKA_URL: "${{RAILWAY_PRIVATE_DOMAIN}}",
             KAFKA_PORT: "9092",
-            KAFKA_CFG_NODE_ID: "0",
+            KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://${{KAFKA_URL}}:9092",
+            KAFKA_CFG_NODE_ID: "1",
             KAFKA_CFG_PROCESS_ROLES: "controller,broker",
             KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093",
             KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP:
                 "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
-            KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@kafka:9093",
+            KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@${{KAFKA_URL}}:9093",
             KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER",
-            // KAFKA_ADVERTISED_LISTENERS:
-            //     "PLAINTEXT://kafka.railway.internal:9092",
-            // KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT",
-            // KAFKA_LISTENERS: "PLAINTEXT://
         },
-    )
-
-    console.log("Adding Kafka service volume...")
-    await volumeCreate(
-        client,
-        projectId,
-        service.serviceCreate.id,
-        "/bitnami/kafka",
     )
 
     return service
